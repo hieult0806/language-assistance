@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="panel-grid">
+    <article class="panel">
+        <div class="panel-heading">
+            <div>
+                <div class="eyebrow">Runtime</div>
+                <h3>Container Configuration</h3>
+            </div>
+        </div>
+        <dl class="settings-grid">
+            <div>
+                <dt>Configured Analyzer</dt>
+                <dd>{{ analyzer_mode }}</dd>
+            </div>
+            <div>
+                <dt>Active Engine</dt>
+                <dd>{{ active_engine }}</dd>
+            </div>
+            <div>
+                <dt>Database</dt>
+                <dd>{{ settings.database_path }}</dd>
+            </div>
+            <div>
+                <dt>Import Directory</dt>
+                <dd>{{ settings.import_dir }}</dd>
+            </div>
+            <div>
+                <dt>Pending Analyses</dt>
+                <dd>{{ snapshot.pending_analyses }}</dd>
+            </div>
+            <div>
+                <dt>LLM Model</dt>
+                <dd>{% if settings.llm_model %}{{ settings.llm_model }}{% else %}Disabled{% endif %}</dd>
+            </div>
+            <div>
+                <dt>LLM Endpoint</dt>
+                <dd>{% if settings.llm_model %}{{ settings.llm_api_base_url }}{% else %}Disabled{% endif %}</dd>
+            </div>
+            <div>
+                <dt>LLM Max Tokens</dt>
+                <dd>{% if settings.llm_model %}{{ settings.llm_max_tokens }}{% else %}Disabled{% endif %}</dd>
+            </div>
+            <div>
+                <dt>LLM Reasoning</dt>
+                <dd>{% if settings.llm_model %}{{ settings.llm_reasoning_effort or 'disabled' }}{% else %}Disabled{% endif %}</dd>
+            </div>
+            <div>
+                <dt>API Token</dt>
+                <dd>{% if settings.api_token %}Configured{% else %}Disabled{% endif %}</dd>
+            </div>
+        </dl>
+        {% if llm_error %}
+        <p class="callout">LLM grammar analysis is unavailable, so the app fell back to a local analyzer. Error: {{ llm_error }}</p>
+        {% endif %}
+        {% if language_tool_error %}
+        <p class="callout">LanguageTool is unavailable, so the app is skipping the local LanguageTool path. Error: {{ language_tool_error }}</p>
+        {% endif %}
+    </article>
+
+    <article class="panel">
+        <div class="panel-heading">
+            <div>
+                <div class="eyebrow">Capture Paths</div>
+                <h3>How To Feed Prompts</h3>
+            </div>
+        </div>
+        <ol class="ordered-list">
+            <li>Use <code>.claude/settings.example.json</code> with <code>python scripts/install_hooks.py --client claude</code> for Claude Code.</li>
+            <li>Use <code>.codex/hooks.example.json</code> with <code>python scripts/install_hooks.py --client codex</code> for Codex.</li>
+            <li>Use the API endpoint <code>POST /api/prompts</code> from any custom hook or wrapper.</li>
+            <li>Drop <code>.jsonl</code> or <code>.txt</code> files into <code>{{ settings.import_dir }}</code>.</li>
+            <li>Use the manual capture page when you just want to paste a prompt yourself.</li>
+        </ol>
+        <p class="hint">Need the full operator guide? Open <a href="/instructions">Instructions</a>.</p>
+        <form action="/settings/imports/scan" method="post">
+            <button class="button button-secondary" type="submit">Scan Import Directory Now</button>
+        </form>
+    </article>
+</section>
+
+<section class="panel-grid">
+    <article class="panel">
+        <div class="panel-heading">
+            <div>
+                <div class="eyebrow">Sources</div>
+                <h3>Prompt Sources</h3>
+            </div>
+        </div>
+        <ul class="pattern-list">
+            {% for item in snapshot.sources %}
+            <li>
+                <span class="pill">{{ item.source }}</span>
+                <div><strong>{{ item.count }}</strong><p>prompts captured</p></div>
+            </li>
+            {% else %}
+            <li class="empty-state">No prompt sources have been recorded yet.</li>
+            {% endfor %}
+        </ul>
+    </article>
+
+    <article class="panel">
+        <div class="panel-heading">
+            <div>
+                <div class="eyebrow">Top Categories</div>
+                <h3>Issue Snapshot</h3>
+            </div>
+        </div>
+        <ul class="pattern-list">
+            {% for item in snapshot.top_issue_categories %}
+            <li>
+                <span class="pill">{{ item.category }}</span>
+                <div><strong>{{ item.count }}</strong><p>issues seen</p></div>
+            </li>
+            {% else %}
+            <li class="empty-state">Issue counts will appear after analysis completes.</li>
+            {% endfor %}
+        </ul>
+    </article>
+</section>
+{% endblock %}

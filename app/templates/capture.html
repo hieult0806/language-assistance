@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="panel">
+    <div class="panel-heading">
+        <div>
+            <div class="eyebrow">Manual</div>
+            <h3>Paste A Prompt</h3>
+        </div>
+    </div>
+    <form class="capture-form" method="post" action="/capture">
+        <label>
+            <span>Source</span>
+            <input type="text" name="source" value="manual" maxlength="64">
+        </label>
+        <label>
+            <span>Session ID</span>
+            <input type="text" name="session_id" placeholder="Optional">
+        </label>
+        <label class="span-2">
+            <span>Prompt Text</span>
+            <textarea name="text" rows="12" placeholder="Paste a prompt here" required></textarea>
+        </label>
+        <div class="span-2">
+            <button class="button" type="submit">Store And Analyze</button>
+        </div>
+    </form>
+</section>
+{% endblock %}
+

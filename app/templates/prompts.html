@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="prompt-history-layout">
+    <div
+        id="prompt-history-panel"
+        data-refresh-url="{{ refresh_path }}"
+        data-refresh-interval-ms="{{ refresh_interval_ms }}"
+    >
+        {% include "partials/prompts_live_feed.html" %}
+    </div>
+
+    <aside class="panel filter-panel">
+        <div class="panel-heading">
+            <div>
+                <div class="eyebrow">Filters</div>
+                <h3>Refine Feed</h3>
+            </div>
+        </div>
+        <form class="filters filters-compact" method="get" action="/prompts">
+            <label>
+                <span>Source</span>
+                <select name="source">
+                    <option value="">All sources</option>
+                    {% for source in sources %}
+                    <option value="{{ source.source }}" {% if selected_source == source.source %}selected{% endif %}>{{ source.source }} ({{ source.count }})</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label>
+                <span>Status</span>
+                <select name="status">
+                    <option value="">All statuses</option>
+                    {% for item in ['queued', 'processing', 'completed', 'failed'] %}
+                    <option value="{{ item }}" {% if selected_status == item %}selected{% endif %}>{{ item }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <div class="filter-actions">
+                <button class="button" type="submit">Apply</button>
+                {% if selected_source or selected_status %}
+                <a class="button button-secondary" href="/prompts">Reset</a>
+                {% endif %}
+            </div>
+        </form>
+    </aside>
+</section>
+{% endblock %}

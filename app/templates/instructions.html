@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="hero-card">
+    <div>
+        <div class="eyebrow">Guide</div>
+        <h3>How To Run And Use The Tracker</h3>
+        <p>This app logs a copy of your prompts after you send them, analyzes grammar in the background, and lets you review patterns later. It never rewrites or blocks the prompt that goes to Codex or Claude Code.</p>
+    </div>
+    <div class="hero-actions">
+        <a class="button" href="/capture">Try Manual Capture</a>
+        <a class="button button-secondary" href="/settings">Open Settings</a>
+    </div>
+</section>
+
+<section class="panel-grid">
+    <article class="panel">
+        <div class="panel-heading">
+            <div>
+                <div class="eyebrow">Quick Start</div>
+                <h3>First Run</h3>
+            </div>
+        </div>
+        <ol class="ordered-list">
+            <li>Start the app with <code>docker compose up --build</code>.</li>
+            <li>Open the tracker in your browser using the configured host and port.</li>
+            <li>If <code>APP_API_TOKEN</code> is set, log in with the same token at <code>/login</code>.</li>
+            <li>If you want LLM analysis, set your own <code>LLM_API_BASE_URL</code> and <code>LLM_MODEL</code> values before starting the app.</li>
+            <li>Use <a href="/capture">Manual Capture</a> to verify the dashboard and analysis pipeline before wiring hooks.</li>
+        </ol>
+    </article>
+
+    <article class="panel">
+        <div class="panel-heading">
+            <div>
+                <div class="eyebrow">Capture</div>
+                <h3>Ways To Send Prompts</h3>
+            </div>
+        </div>
+        <ol class="ordered-list">
+            <li>Claude Code hook: install the bundled template with <code>python scripts/install_hooks.py --client claude</code>.</li>
+            <li>Codex hook: install the bundled template with <code>python scripts/install_hooks.py --client codex</code>.</li>
+            <li>HTTP API: send JSON to <code>POST /api/prompts</code> from any custom script or wrapper.</li>
+            <li>Import folder: drop <code>.jsonl</code> or <code>.txt</code> files into <code>{{ settings.import_dir }}</code> and scan from Settings.</li>
+        </ol>
+    </article>
+</section>
+
+<section class="panel-grid">
+    <article class="panel">
+        <div class="panel-heading">
+            <div>
+                <div class="eyebrow">Claude Code</div>
+                <h3>Project Hook Setup</h3>
+            </div>
+        </div>
+        <ol class="ordered-list">
+            <li>Run <code>python scripts/install_hooks.py --client claude</code> in the repo root for this project only.</li>
+            <li>For all Claude Code projects on this machine, use <code>python scripts/install_hooks.py --client claude --scope global</code> instead.</li>
+            <li>Set <code>PROMPT_TRACKER_TOKEN</code> in your shell if the app uses <code>APP_API_TOKEN</code>.</li>
+            <li>Confirm that <code>.claude/settings.local.json</code> exists for project-local installs, or <code>~/.claude/settings.json</code> exists for global installs.</li>
+            <li>Run <code>/hooks</code> in Claude Code and confirm the hook source is <code>Local</code> for project-local installs or <code>User</code> for global installs.</li>
+            <li>If you want the installer to write a real tracker host value, set <code>PROMPT_TRACKER_URL</code> before running it. Otherwise edit the generated Claude settings file manually.</li>
+            <li>Submit a prompt in Claude Code, then open the dashboard to confirm a new prompt appears with source <code>claude-code</code>.</li>
+        </ol>
+        <p class="hint">Claude uses the HTTP hook endpoint <code>POST /hooks/claude/user-prompt-submit</code>.</p>
+    </article>
+
+    <article class="panel">
+        <div class="panel-heading">
+            <div>
+                <div class="eyebrow">Codex</div>
+                <h3>Command Hook Setup</h3>
+            </div>
+        </div>
+        <ol class="ordered-list">
+            <li>Run <code>python scripts/install_hooks.py --client codex</code> in the repo root.</li>
+            <li>Enable <code>codex_hooks = true</code> under <code>[features]</code> in <code>~/.codex/config.toml</code>.</li>
+            <li>Set <code>PROMPT_TRACKER_URL</code> and <code>PROMPT_TRACKER_TOKEN</code> if you do not want the forwarder defaults.</li>
+            <li>Verify that <code>.codex/hooks.json</code> exists and points to <code>scripts/hook_capture_prompt.py</code>.</li>
+            <li>Restart Codex or open a fresh Codex session in this repo, then send a test prompt.</li>
+            <li>Open <code>/prompts</code> and confirm the newest prompt appears in the live review section at the top.</li>
+        </ol>
+        <p class="hint">This repo's Codex hook path is working on the current Windows setup, but upstream support may still vary across installations.</p>
+    </article>
+</section>
+
+<section class="panel-grid">
+    <article class="panel">
+        <div class="panel-heading">
+            <div>
+                <div class="eyebrow">Daily Use</div>
+                <h3>How To Read The Dashboard</h3>
+            </div>
+        </div>
+        <ol class="ordered-list">
+            <li><strong>Overview</strong> shows average grammar, average clarity, and recurring issue categories.</li>
+            <li><strong>Prompt History</strong> lets you filter by source and latest analysis status, and now pins the newest prompt in a live two-column review.</li>
+            <li>The live review section shows the original prompt on the left, the suggested rewrite on the right, and highlights the wording changes between them.</li>
+            <li><strong>Prompt Detail</strong> shows the original prompt, suggested rewrite, issue list, and previous analysis runs.</li>
+            <li><strong>Settings</strong> shows runtime config, including whether the LLM grammar analyzer is active, and lets you trigger an import scan manually.</li>
+        </ol>
+    </article>
+
+    <article class="panel">
+        <div class="panel-heading">
+            <div>
+                <div class="eyebrow">Troubleshooting</div>
+                <h3>Common Problems</h3>
+            </div>
+        </div>
+        <ol class="ordered-list">
+            <li>No new prompts appear: check the source client hook config first, then verify the app with <code>GET /health</code>.</li>
+            <li>Dashboard asks for login repeatedly: confirm that the browser token matches <code>APP_API_TOKEN</code>.</li>
+            <li>Claude hook fails: verify the HTTP endpoint and token header.</li>
+            <li>Codex hook fails: confirm that Codex was restarted after installing the hook and that the shell launching Codex has the right tracker env vars.</li>
+            <li>LLM grammar analysis fails: verify <code>ANALYZER_MODE</code>, <code>LLM_MODEL</code>, and that the base URL points to the provider's OpenAI-compatible <code>/v1</code> endpoint.</li>
+            <li>Imports stop on malformed JSONL: fix the broken line, then rescan the file.</li>
+        </ol>
+    </article>
+</section>
+{% endblock %}

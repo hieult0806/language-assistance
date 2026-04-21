@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ page_title }} - {{ app_name }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/style.css') }}">
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <div class="brand">
+                <span class="brand-kicker">Passive Coach</span>
+                <h1>{{ app_name }}</h1>
+                <p>Track how your prompts read without interrupting Codex or Claude Code.</p>
+            </div>
+            <nav class="nav">
+                <a href="/" class="{% if request.url.path == '/' %}active{% endif %}">Overview</a>
+                <a href="/prompts" class="{% if request.url.path.startswith('/prompts') %}active{% endif %}">Prompt History</a>
+                <a href="/capture" class="{% if request.url.path == '/capture' %}active{% endif %}">Manual Capture</a>
+                <a href="/instructions" class="{% if request.url.path == '/instructions' %}active{% endif %}">Instructions</a>
+                <a href="/settings" class="{% if request.url.path == '/settings' %}active{% endif %}">Settings</a>
+            </nav>
+            <div class="sidebar-panel">
+                <div class="label">Analyzer Mode</div>
+                <div class="value">{{ settings.analyzer_mode }}</div>
+                <div class="label">Data Path</div>
+                <div class="value">{{ settings.database_path }}</div>
+            </div>
+        </aside>
+        <main class="content">
+            <header class="page-header">
+                <div>
+                    <div class="eyebrow">{{ page_title }}</div>
+                    <h2>{{ page_title }}</h2>
+                </div>
+                <div class="header-actions">
+                    {% if ui_auth_enabled and ui_authenticated %}
+                    <form method="post" action="/logout">
+                        <button class="button button-secondary" type="submit">Logout</button>
+                    </form>
+                    {% endif %}
+                    <a class="button button-secondary" href="/instructions">Instructions</a>
+                    <a class="button button-secondary" href="/capture">Add Prompt</a>
+                    <a class="button" href="/prompts">Browse History</a>
+                </div>
+            </header>
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+    <script src="{{ url_for('static', path='js/dashboard.js') }}"></script>
+</body>
+</html>

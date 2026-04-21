@@ -1,0 +1,137 @@
+{% if featured_prompt %}
+<section class="panel live-prompt-shell">
+    <div class="panel-header">
+        <div>
+            <div class="eyebrow">Live Review</div>
+            <h3>Latest Prompt</h3>
+        </div>
+        <div class="header-actions">
+            <span class="pill">{{ featured_prompt.source }}</span>
+            {% if featured_prompt.latest_analysis %}
+            <span class="pill">{{ featured_prompt.latest_analysis.status }}</span>
+            {% endif %}
+            <div class="status-meta">Auto-refresh every {{ (refresh_interval_ms / 1000)|int }}s</div>
+        </div>
+    </div>
+
+    <div class="live-prompt-meta">
+        <span>Captured {{ featured_prompt.created_at|timestamp }}</span>
+        {% if featured_prompt.session_id %}<span>Session {{ featured_prompt.session_id }}</span>{% endif %}
+        <a href="/prompts/{{ featured_prompt.id }}">Open detail view</a>
+    </div>
+
+    {% if featured_prompt.latest_analysis and featured_prompt.live_diff.has_changes %}
+    <div class="diff-legend">
+        <span><i class="diff-swatch diff-swatch-remove"></i>Original wording that changed</span>
+        <span><i class="diff-swatch diff-swatch-add"></i>Rewrite additions or fixes</span>
+    </div>
+    {% endif %}
+
+    <div class="live-prompt-grid">
+        <article class="review-card">
+            <div class="eyebrow">Original Prompt</div>
+            <h4>What You Sent</h4>
+            <div class="prompt-block prompt-block-live diff-block">{{ featured_prompt.live_diff.original_html }}</div>
+        </article>
+
+        <article class="review-card review-card-accent">
+            <div class="eyebrow">Suggested Rewrite</div>
+            <h4>Cleaner Version</h4>
+            {% if featured_prompt.latest_analysis %}
+            <div class="prompt-block prompt-block-live rewrite diff-block">{{ featured_prompt.live_diff.rewritten_html }}</div>
+            {% else %}
+            <div class="empty-state prompt-block prompt-block-live">Analysis is still running for this prompt.</div>
+            {% endif %}
+        </article>
+    </div>
+
+    {% if featured_prompt.latest_analysis %}
+    <div class="live-analysis-strip">
+        <article class="stat-card compact-stat">
+            <span class="label">Grammar</span>
+            <strong class="tone-{{ featured_prompt.latest_analysis.grammar_score|score_tone }}">{{ featured_prompt.latest_analysis.grammar_score or '...' }}</strong>
+        </article>
+        <article class="stat-card compact-stat">
+            <span class="label">Clarity</span>
+            <strong class="tone-{{ featured_prompt.latest_analysis.clarity_score|score_tone }}">{{ featured_prompt.latest_analysis.clarity_score or '...' }}</strong>
+        </article>
+        <article class="stat-card compact-stat compact-stat-wide">
+            <span class="label">Summary</span>
+            <strong class="summary-text">{{ featured_prompt.latest_analysis.summary or 'No summary yet.' }}</strong>
+        </article>
+    </div>
+
+    <div class="issue-chips">
+        {% for issue in featured_prompt.latest_analysis.issues[:4] %}
+        <article class="issue-chip">
+            <div class="issue-chip-topline">
+                <span class="pill">{{ issue.category }}</span>
+                <span class="severity severity-{{ issue.severity }}">{{ issue.severity }}</span>
+            </div>
+            <strong>{{ issue.message }}</strong>
+            {% if issue.explanation %}<p>{{ issue.explanation }}</p>{% endif %}
+        </article>
+        {% else %}
+        <div class="empty-state">No grammar issues found for the latest prompt.</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</section>
+{% else %}
+<section class="panel live-prompt-shell">
+    <div class="panel-header">
+        <div>
+            <div class="eyebrow">Live Review</div>
+            <h3>Latest Prompt</h3>
+        </div>
+        <div class="status-meta">Auto-refresh every {{ (refresh_interval_ms / 1000)|int }}s</div>
+    </div>
+    <div class="empty-state">No prompts match the current filters yet.</div>
+</section>
+{% endif %}
+
+<section class="panel">
+    <div class="panel-header">
+        <div>
+            <div class="eyebrow">History</div>
+            <h3>Earlier Prompts</h3>
+        </div>
+    </div>
+
+    <div class="history-list">
+        {% for prompt in history_prompts %}
+        <a href="/prompts/{{ prompt.id }}" class="history-row">
+            <div class="history-main">
+                <div class="history-headline">
+                    <span class="pill">{{ prompt.source }}</span>
+                    <strong>{{ prompt.created_at|timestamp }}</strong>
+                    <span class="muted">{{ prompt.latest_status or 'queued' }}</span>
+                </div>
+                <p>{{ prompt.text[:220] }}{% if prompt.text|length > 220 %}...{% endif %}</p>
+            </div>
+            <div class="history-rewrite">
+                <span class="label">Suggested Rewrite</span>
+                <p>{{ (prompt.corrected_text or prompt.text)[:220] }}{% if (prompt.corrected_text or prompt.text)|length > 220 %}...{% endif %}</p>
+            </div>
+            <div class="history-scores">
+                <span class="score tone-{{ prompt.grammar_score|score_tone }}">{{ prompt.grammar_score or '...' }}</span>
+                <span class="muted">Grammar</span>
+            </div>
+        </a>
+        {% else %}
+        <div class="empty-state">No earlier prompts match the current filters.</div>
+        {% endfor %}
+    </div>
+
+    <div class="pagination">
+        <span>Page {{ prompts.page }} of {{ prompts.pages }}</span>
+        <div class="header-actions">
+            {% if prompts.page > 1 %}
+            <a class="button button-secondary" href="/prompts?page={{ prompts.page - 1 }}&source={{ selected_source }}&status={{ selected_status }}">Previous</a>
+            {% endif %}
+            {% if prompts.page < prompts.pages %}
+            <a class="button button-secondary" href="/prompts?page={{ prompts.page + 1 }}&source={{ selected_source }}&status={{ selected_status }}">Next</a>
+            {% endif %}
+        </div>
+    </div>
+</section>

@@ -1,0 +1,21 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "http",
+            "url": "__TRACKER_BASE_URL__/hooks/claude/user-prompt-submit",
+            "timeout": 5,
+            "headers": {
+              "X-API-Token": "$PROMPT_TRACKER_TOKEN"
+            },
+            "allowedEnvVars": [
+              "PROMPT_TRACKER_TOKEN"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

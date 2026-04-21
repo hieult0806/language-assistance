@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="panel-grid detail-grid">
+    <article class="panel">
+        <div class="panel-heading">
+            <div>
+                <div class="eyebrow">Original</div>
+                <h3>Prompt {{ prompt.id }}</h3>
+            </div>
+            <span class="pill">{{ prompt.source }}</span>
+        </div>
+        <pre class="prompt-block">{{ prompt.text }}</pre>
+        <div class="meta-row">
+            <span>Captured {{ prompt.created_at|timestamp }}</span>
+            {% if prompt.session_id %}<span>Session {{ prompt.session_id }}</span>{% endif %}
+        </div>
+        <form action="/prompts/{{ prompt.id }}/reanalyze" method="post">
+            <button class="button" type="submit">Run Analysis Again</button>
+        </form>
+    </article>
+
+    <article class="panel">
+        <div class="panel-heading">
+            <div>
+                <div class="eyebrow">Latest Analysis</div>
+                <h3>{{ prompt.latest_analysis.status if prompt.latest_analysis else 'Pending' }}</h3>
+            </div>
+            {% if prompt.latest_analysis %}
+            <span class="pill">{{ prompt.latest_analysis.engine }}</span>
+            {% endif %}
+        </div>
+        {% if prompt.latest_analysis %}
+        <div class="stat-grid compact">
+            <article class="stat-card">
+                <span class="label">Grammar</span>
+                <strong class="tone-{{ prompt.latest_analysis.grammar_score|score_tone }}">{{ prompt.latest_analysis.grammar_score or '...' }}</strong>
+            </article>
+            <article class="stat-card">
+                <span class="label">Clarity</span>
+                <strong class="tone-{{ prompt.latest_analysis.clarity_score|score_tone }}">{{ prompt.latest_analysis.clarity_score or '...' }}</strong>
+            </article>
+        </div>
+        <p>{{ prompt.latest_analysis.summary }}</p>
+        <h4>Suggested Rewrite</h4>
+        <pre class="prompt-block rewrite">{{ prompt.latest_analysis.corrected_text or prompt.text }}</pre>
+        <h4>Issues</h4>
+        <ul class="issue-list">
+            {% for issue in prompt.latest_analysis.issues %}
+            <li>
+                <div class="issue-topline">
+                    <span class="pill">{{ issue.category }}</span>
+                    <span class="severity severity-{{ issue.severity }}">{{ issue.severity }}</span>
+                </div>
+                <strong>{{ issue.message }}</strong>
+                {% if issue.explanation %}<p>{{ issue.explanation }}</p>{% endif %}
+                {% if issue.suggestion %}<p>{{ issue.suggestion }}</p>{% endif %}
+                {% if issue.replacement %}<p>Replacement: <code>{{ issue.replacement }}</code></p>{% endif %}
+            </li>
+            {% else %}
+            <li class="empty-state">No issues found for this analysis.</li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="empty-state">This prompt has not been analyzed yet.</p>
+        {% endif %}
+    </article>
+</section>
+
+<section class="panel">
+    <div class="panel-heading">
+        <div>
+            <div class="eyebrow">History</div>
+            <h3>Analysis Runs</h3>
+        </div>
+    </div>
+    <div class="table-scroll">
+        <table>
+            <thead>
+                <tr>
+                    <th>Created</th>
+                    <th>Status</th>
+                    <th>Engine</th>
+                    <th>Grammar</th>
+                    <th>Clarity</th>
+                    <th>Completed</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for analysis in prompt.analyses %}
+                <tr>
+                    <td>{{ analysis.created_at|timestamp }}</td>
+                    <td>{{ analysis.status }}</td>
+                    <td>{{ analysis.engine }}</td>
+                    <td class="tone-{{ analysis.grammar_score|score_tone }}">{{ analysis.grammar_score or '...' }}</td>
+                    <td class="tone-{{ analysis.clarity_score|score_tone }}">{{ analysis.clarity_score or '...' }}</td>
+                    <td>{{ analysis.completed_at|timestamp }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

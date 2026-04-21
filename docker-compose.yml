@@ -1,0 +1,21 @@
+services:
+  prompt-tracker:
+    build: .
+    container_name: prompt-grammar-tracker
+    ports:
+      - "8080:8080"
+    environment:
+      ANALYZER_MODE: ${ANALYZER_MODE:-auto}
+      ANALYZER_LANGUAGE: ${ANALYZER_LANGUAGE:-en-US}
+      LLM_API_BASE_URL: ${LLM_API_BASE_URL:-}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_MODEL: ${LLM_MODEL:-}
+      LLM_TIMEOUT_SECONDS: ${LLM_TIMEOUT_SECONDS:-30}
+      LLM_MAX_TOKENS: ${LLM_MAX_TOKENS:-256}
+      LLM_REASONING_EFFORT: ${LLM_REASONING_EFFORT:-none}
+      LLM_SEED: ${LLM_SEED:-}
+      APP_API_TOKEN: ${APP_API_TOKEN:-}
+      IMPORT_POLL_INTERVAL_SECONDS: ${IMPORT_POLL_INTERVAL_SECONDS:-20}
+    volumes:
+      - ./data:/data
+      - ./imports:/imports

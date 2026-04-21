@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="hero-card">
+    <div>
+        <div class="eyebrow">Workflow</div>
+        <h3>Your prompts stay untouched</h3>
+        <p>The app captures a copy, analyzes it in the background, and builds a history of the grammar patterns you repeat over time.</p>
+    </div>
+    <div class="hero-actions">
+        <a class="button" href="/capture">Paste A Prompt</a>
+        <a class="button button-secondary" href="/settings">Connect Hooks</a>
+    </div>
+</section>
+
+<section class="stat-grid">
+    <article class="stat-card">
+        <span class="label">Prompts Logged</span>
+        <strong>{{ stats.total_prompts }}</strong>
+    </article>
+    <article class="stat-card">
+        <span class="label">Average Grammar</span>
+        <strong class="tone-{{ stats.avg_grammar_score|score_tone }}">{{ stats.avg_grammar_score }}</strong>
+    </article>
+    <article class="stat-card">
+        <span class="label">Average Clarity</span>
+        <strong class="tone-{{ stats.avg_clarity_score|score_tone }}">{{ stats.avg_clarity_score }}</strong>
+    </article>
+    <article class="stat-card">
+        <span class="label">In Queue</span>
+        <strong>{{ stats.queued_prompts + stats.processing_prompts }}</strong>
+    </article>
+</section>
+
+<section class="panel-grid">
+    <article class="panel chart-panel">
+        <div class="panel-heading">
+            <div>
+                <div class="eyebrow">Trend</div>
+                <h3>Recent Scores</h3>
+            </div>
+            <div class="legend">
+                <span><i class="dot dot-grammar"></i>Grammar</span>
+                <span><i class="dot dot-clarity"></i>Clarity</span>
+            </div>
+        </div>
+        <canvas id="trend-chart" data-series='{{ trends_json|safe }}'></canvas>
+        <p class="hint">Daily averages for prompts with completed analysis.</p>
+    </article>
+    <article class="panel">
+        <div class="panel-heading">
+            <div>
+                <div class="eyebrow">Patterns</div>
+                <h3>Recurring Issues</h3>
+            </div>
+        </div>
+        <ul class="pattern-list">
+            {% for item in recurring %}
+            <li>
+                <span class="pill">{{ item.category }}</span>
+                <div>
+                    <strong>{{ item.count }}x</strong>
+                    <p>{{ item.message }}</p>
+                </div>
+            </li>
+            {% else %}
+            <li class="empty-state">No recurring issues yet.</li>
+            {% endfor %}
+        </ul>
+    </article>
+</section>
+
+<section class="panel-grid">
+    <article class="panel">
+        <div class="panel-heading">
+            <div>
+                <div class="eyebrow">Recent</div>
+                <h3>Latest Prompts</h3>
+            </div>
+            <a href="/prompts">View all</a>
+        </div>
+        <div class="prompt-list">
+            {% for prompt in recent_prompts %}
+            <a href="/prompts/{{ prompt.id }}" class="prompt-row">
+                <div>
+                    <strong>{{ prompt.source }}</strong>
+                    <p>{{ prompt.text[:160] }}{% if prompt.text|length > 160 %}...{% endif %}</p>
+                </div>
+                <div class="score-stack">
+                    <span class="score tone-{{ prompt.grammar_score|score_tone }}">{{ prompt.grammar_score or '...' }}</span>
+                    <span class="muted">{{ prompt.latest_status or 'queued' }}</span>
+                </div>
+            </a>
+            {% else %}
+            <div class="empty-state">No prompts have been captured yet.</div>
+            {% endfor %}
+        </div>
+    </article>
+    <article class="panel">
+        <div class="panel-heading">
+            <div>
+                <div class="eyebrow">Breakdown</div>
+                <h3>Top Categories</h3>
+            </div>
+        </div>
+        <div class="bars">
+            {% for item in stats.top_issue_categories %}
+            <div class="bar-row">
+                <div class="bar-label">{{ item.category }}</div>
+                <div class="bar-track"><span style="width: {{ (item.count * 18) if item.count * 18 < 100 else 100 }}%;"></span></div>
+                <div class="bar-value">{{ item.count }}</div>
+            </div>
+            {% else %}
+            <div class="empty-state">Issue categories will appear after analysis runs.</div>
+            {% endfor %}
+        </div>
+    </article>
+</section>
+{% endblock %}
+

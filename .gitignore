@@ -1,0 +1,8 @@
+.pytest_cache/
+__pycache__/
+.venv/
+*.pyc
+data/
+imports/
+.claude/settings.local.json
+.codex/hooks.json
